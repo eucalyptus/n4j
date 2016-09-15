@@ -30,6 +30,8 @@ import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRe
 import com.amazonaws.services.identitymanagement.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.github.sjones4.youcan.youare.YouAre;
 import com.github.sjones4.youcan.youare.YouAreClient;
 import com.github.sjones4.youcan.youare.model.CreateAccountRequest;
@@ -52,6 +54,9 @@ class N4j {
     static String endpointFile = System.getProperty("endpoints");
     static String LOCAL_INI_FILE = System.getProperty("inifile", "euca-admin.ini");
     static String REMOTE_INI_FILE ="/root/.euca/euca-admin.ini";
+    static String LOCAL_EUCTL_FILE = System.getProperty("euctlfile", "euctl.ini");
+    static String REMOTE_EUCTL_FILE ="/root/euctl.ini";
+
     static Logger logger = Logger.getLogger(N4j.class.getCanonicalName());
     static String EC2_ENDPOINT = null;
     static String AS_ENDPOINT = null;
@@ -59,6 +64,7 @@ class N4j {
     static String IAM_ENDPOINT = null;
     static String CW_ENDPOINT = null;
     static String S3_ENDPOINT = null;
+    static String SQS_ENDPOINT = null;
     static String TOKENS_ENDPOINT = null;
     static String SECRET_KEY = null;
     static String ACCESS_KEY = null;
@@ -70,6 +76,7 @@ class N4j {
     static AmazonElasticLoadBalancing elb;
     static AmazonCloudWatch cw;
     static AmazonS3 s3;
+    static AmazonSQS sqs;
     static YouAre youAre;
     static String IMAGE_ID = null;
     static String KERNEL_ID = null;
@@ -120,6 +127,15 @@ class N4j {
         print("Using resource prefix for test: " + NAME_PREFIX);
         print("Cloud Discovery Complete");
     }
+
+    public static void getCloudInfoAndSqs() throws Exception {
+        getCloudInfo();
+        getConfigProperties(CLC_IP, USER, PASSWORD);
+        print("Getting sqs info from " + LOCAL_INI_FILE);
+        SQS_ENDPOINT = getAttribute(LOCAL_INI_FILE, "simplequeue-url");
+        sqs = getSqsClient(ACCESS_KEY, SECRET_KEY, SQS_ENDPOINT);
+    }
+
 
     // Quick way to initialize just the S3 client without initializing other clients in getCloudInfo().
     // For ease of use against AWS (mainly) as well as Eucalyptus
@@ -269,6 +285,51 @@ class N4j {
         getRemoteFile(clcip, user, password, REMOTE_INI_FILE, "euca-admin.ini");
     }
 
+    public static void getConfigProperties(String clcip, String user, String password) {
+        print("CLC IP: " + clcip);
+
+        try {
+            JSch jsch = new JSch();
+            Session session = jsch.getSession(user, clcip, 22);
+            session.setPassword(password);
+            session.setConfig("StrictHostKeyChecking", "no");
+            print("Establishing Connection...");
+            session.connect();
+            print("Connection established.");
+
+
+            print("Creating config properties: " + REMOTE_EUCTL_FILE);
+            String command = "eval `clcadmin-assume-system-credentials`; " +
+                "euctl > " + REMOTE_EUCTL_FILE;
+            Channel channel=session.openChannel("exec");
+            ((ChannelExec)channel).setCommand(command);
+            channel.connect();
+            InputStream in=channel.getInputStream();
+            byte[] tmp=new byte[1024];
+            while(true){
+                while(in.available()>0){
+                    int i=in.read(tmp, 0, 1024);
+                    if(i<0)break;
+                    print(new String(tmp, 0, i));
+                }
+                if(channel.isClosed()){
+                    if(in.available()>0) continue;
+                    print("Creating config properties exit-status: "+channel.getExitStatus());
+                    break;
+                }
+                try{Thread.sleep(1000);}catch(Exception ee){}
+            }
+            channel.disconnect();
+            session.disconnect();
+        }
+        catch(JSchException | IOException e) {
+            System.err.print(e);
+        }
+        print("Fetching " + REMOTE_EUCTL_FILE + " file");
+        getRemoteFile(clcip, user, password, REMOTE_EUCTL_FILE, LOCAL_EUCTL_FILE);
+    }
+
+
     public static void getRemoteFile(String clcip, String user, String password, String remoteFile, String localFile) {
         try
         {
@@ -377,6 +438,14 @@ class N4j {
         return as;
     }
 
+      private static AmazonSQS getSqsClient(String accessKey, String secretKey,
+                                                         String endpoint) {
+        AWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
+        final AmazonSQS sqs = new AmazonSQSClient(creds);
+        sqs.setEndpoint(endpoint);
+        return sqs;
+    }
+
     private static AmazonElasticLoadBalancing getElbClient(String accessKey, String secretKey,
                                                            String endpoint) {
         AWSCredentials creds = new BasicAWSCredentials(accessKey, secretKey);
@@ -417,6 +486,24 @@ class N4j {
         s3.setEndpoint(endpoint);
         return s3;
     }
+
+    public static String getConfigProperty(String configPath, String field) throws IOException {
+        Charset charset = Charset.forName("UTF-8");
+        String result = null;
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(configPath), charset);
+            for (String line : lines) {
+                if (line.contains(field)) {
+                    result = line.substring(line.indexOf('=') + 2);
+                    break;
+                }
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        return result;
+    }
+
 
     /**
      * @param credpath
