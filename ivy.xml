@@ -17,6 +17,7 @@
         <dependency org="com.amazonaws" name="aws-java-sdk-simpleworkflow" rev="1.10.+"/>
         <dependency org="com.amazonaws" name="aws-java-sdk-sts" rev="1.10.+"/>
         <dependency org="com.amazonaws" name="aws-java-sdk-s3" rev="1.10.+"/>
+        <dependency org="com.amazonaws" name="aws-java-sdk-sqs" rev="1.10.+"/>
         <dependency org="com.github.sjones4" name="you-are-sdk" rev="1.0.+"/>
         <dependency org="commons-lang" name="commons-lang" rev="2.6"/>
         <dependency org="org.codehaus.groovy" name="groovy-all" rev="1.8.9"/>
