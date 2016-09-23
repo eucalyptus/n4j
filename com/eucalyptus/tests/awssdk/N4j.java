@@ -136,6 +136,16 @@ class N4j {
         sqs = getSqsClient(ACCESS_KEY, SECRET_KEY, SQS_ENDPOINT);
     }
 
+    public static AmazonSQS getSqsClientWithNewAccount(String account, String user) throws Exception {
+        if (SQS_ENDPOINT == null) {
+            throw new Exception("Please run getCloudInfoAndSQS() first");
+        }
+        AWSCredentials creds = getUserCreds(account, user);
+      print("creds.getAWSAccessKeyId()="+creds.getAWSAccessKeyId());
+      print("creds.getAWSSecretKey()="+creds.getAWSSecretKey());
+      print("SQS_ENDPOINT="+SQS_ENDPOINT);
+        return getSqsClient(creds.getAWSAccessKeyId(), creds.getAWSSecretKey(), SQS_ENDPOINT);
+    }
 
     // Quick way to initialize just the S3 client without initializing other clients in getCloudInfo().
     // For ease of use against AWS (mainly) as well as Eucalyptus

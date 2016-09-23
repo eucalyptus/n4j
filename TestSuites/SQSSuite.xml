@@ -4,6 +4,7 @@
     <test name="SQS_Tests">
         <classes>
             <class name="com.eucalyptus.tests.awssdk.TestSQSCreateListDeleteQueue"/>
+            <class name="com.eucalyptus.tests.awssdk.TestSQSSendMessage"/>
         </classes>
     </test>
 </suite>
