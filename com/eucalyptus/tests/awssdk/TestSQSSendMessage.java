@@ -277,7 +277,14 @@ public class TestSQSSendMessage {
       // try this for 90 seconds, just arbitrary
       long startTime = System.currentTimeMillis();
       while (receivedMessages.size() < 3 && System.currentTimeMillis() - startTime < 90 * 1000L) {
+<<<<<<< HEAD
         ReceiveMessageResult receiveMessagesResult = sqs.receiveMessage(queueUrl);
+=======
+        ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest();
+        receiveMessageRequest.setQueueUrl(queueUrl);
+        receiveMessageRequest.setMessageAttributeNames(Collections.singleton("All"));
+        ReceiveMessageResult receiveMessagesResult = sqs.receiveMessage(receiveMessageRequest);
+>>>>>>> sqs-tests
         if (receiveMessagesResult != null && receiveMessagesResult.getMessages() != null) {
           for (Message message: receiveMessagesResult.getMessages()) {
             receivedMessages.put(message.getMessageId(), message);
@@ -425,6 +432,10 @@ public class TestSQSSendMessage {
         sendMessageRequest.getMessageAttributes().put(name, m.getMessageAttributes().get(name));
       }
     }
+<<<<<<< HEAD
+=======
+    sendMessageRequest.setDelaySeconds(1); // just to test delay seconds
+>>>>>>> sqs-tests
     return sendMessageRequest;
   }
 
