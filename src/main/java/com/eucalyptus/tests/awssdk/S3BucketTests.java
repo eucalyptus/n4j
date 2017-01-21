@@ -5,6 +5,7 @@ import static com.eucalyptus.tests.awssdk.N4j.eucaUUID;
 import static com.eucalyptus.tests.awssdk.N4j.initS3ClientWithNewAccount;
 import static com.eucalyptus.tests.awssdk.N4j.print;
 import static com.eucalyptus.tests.awssdk.N4j.testInfo;
+import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.ArrayList;
@@ -174,41 +175,21 @@ public class S3BucketTests {
   public void unimplementedOps() throws Exception {
     testInfo(this.getClass().getSimpleName() + " - notImplementedOps");
 
-    boolean error;
-
-    error = false;
-    try {
-      print(account + ": Fetching bucket policy for " + bucketName);
-      s3.getBucketPolicy(bucketName);
-    } catch (AmazonServiceException ase) {
-      verifyException(ase);
-      error = true;
-    } finally {
-      assertTrue("Expected to receive a 501 NotImplemented error but did not", error);
-    }
-
-    error = false;
     try {
       print(account + ": Fetching bucket notification configuration for " + bucketName);
       s3.getBucketNotificationConfiguration(bucketName);
+      fail("Expected to receive a 501 NotImplemented error but did not");
     } catch (AmazonServiceException ase) {
-      verifyException(ase);
-      error = true;
-    } finally {
-      assertTrue("Expected to receive a 501 NotImplemented error but did not", error);
+      verifyNotImplementedException(ase);
     }
 
-    error = false;
     try {
       print(account + ": Fetching bucket website configuration for " + bucketName);
       s3.getBucketWebsiteConfiguration(bucketName);
+      fail("Expected to receive a 501 NotImplemented error but did not");
     } catch (AmazonServiceException ase) {
-      verifyException(ase);
-      error = true;
-    } finally {
-      assertTrue("Expected to receive a 501 NotImplemented error but did not", error);
+      verifyNotImplementedException(ase);
     }
-
   }
 
   /**
@@ -413,7 +394,7 @@ public class S3BucketTests {
     print("Request ID: " + ase.getRequestId());
   }
 
-  private void verifyException(AmazonServiceException ase) {
+  private void verifyNotImplementedException(AmazonServiceException ase) {
     print("Caught Exception: " + ase.getMessage());
     print("HTTP Status Code: " + ase.getStatusCode());
     print("Amazon Error Code: " + ase.getErrorCode());
