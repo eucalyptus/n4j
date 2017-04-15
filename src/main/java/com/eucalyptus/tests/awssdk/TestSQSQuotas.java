@@ -1,46 +1,19 @@
 package com.eucalyptus.tests.awssdk;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.AmazonWebServiceClient;
-import com.amazonaws.Request;
-import com.amazonaws.handlers.RequestHandler2;
 import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.AddPermissionRequest;
-import com.amazonaws.services.sqs.model.ChangeMessageVisibilityBatchRequest;
-import com.amazonaws.services.sqs.model.ChangeMessageVisibilityBatchRequestEntry;
-import com.amazonaws.services.sqs.model.ChangeMessageVisibilityRequest;
-import com.amazonaws.services.sqs.model.DeleteMessageBatchRequest;
-import com.amazonaws.services.sqs.model.DeleteMessageBatchRequestEntry;
-import com.amazonaws.services.sqs.model.DeleteMessageRequest;
-import com.amazonaws.services.sqs.model.DeleteQueueRequest;
-import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
-import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
-import com.amazonaws.services.sqs.model.ListDeadLetterSourceQueuesRequest;
-import com.amazonaws.services.sqs.model.ListDeadLetterSourceQueuesResult;
 import com.amazonaws.services.sqs.model.ListQueuesResult;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.PurgeQueueRequest;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import com.amazonaws.services.sqs.model.ReceiveMessageResult;
-import com.amazonaws.services.sqs.model.RemovePermissionRequest;
-import com.amazonaws.services.sqs.model.SendMessageBatchRequest;
-import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
-import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 import com.github.sjones4.youcan.youare.model.PutAccountPolicyRequest;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static com.eucalyptus.tests.awssdk.N4j.*;
+import static com.eucalyptus.tests.awssdk.N4j.assertThat;
+import static com.eucalyptus.tests.awssdk.N4j.getCloudInfoAndSqs;
+import static com.eucalyptus.tests.awssdk.N4j.getSqsClientWithNewAccount;
+import static com.eucalyptus.tests.awssdk.N4j.print;
+import static com.eucalyptus.tests.awssdk.N4j.testInfo;
+import static com.eucalyptus.tests.awssdk.N4j.youAre;
 
 /**
  * Created by ethomas on 9/21/16.
@@ -57,7 +30,7 @@ public class TestSQSQuotas {
     try {
       getCloudInfoAndSqs();
       account = "sqs-account-a-" + System.currentTimeMillis();
-      createAccount(account);
+      SQSUtils.synchronizedCreateAccount(account);
       accountSQSClient = getSqsClientWithNewAccount(account, "admin");
     } catch (Exception e) {
       try {
@@ -78,7 +51,7 @@ public class TestSQSQuotas {
           listQueuesResult.getQueueUrls().forEach(accountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(account);
+      SQSUtils.synchronizedDeleteAccount(account);
     }
   }
 

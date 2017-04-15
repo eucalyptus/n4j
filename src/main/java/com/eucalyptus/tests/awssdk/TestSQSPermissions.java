@@ -24,8 +24,6 @@ import java.util.Set;
 
 import static com.eucalyptus.tests.awssdk.N4j.LOCAL_EUCTL_FILE;
 import static com.eucalyptus.tests.awssdk.N4j.assertThat;
-import static com.eucalyptus.tests.awssdk.N4j.createAccount;
-import static com.eucalyptus.tests.awssdk.N4j.deleteAccount;
 import static com.eucalyptus.tests.awssdk.N4j.getCloudInfoAndSqs;
 import static com.eucalyptus.tests.awssdk.N4j.getConfigProperty;
 import static com.eucalyptus.tests.awssdk.N4j.getSqsClientWithNewAccount;
@@ -53,10 +51,10 @@ public class TestSQSPermissions {
       getCloudInfoAndSqs();
       MAX_LABEL_LENGTH_CHARS = getLocalConfigInt("MAX_LABEL_LENGTH_CHARS");
       account = "sqs-account-a-" + System.currentTimeMillis();
-      createAccount(account);
+      SQSUtils.synchronizedCreateAccount(account);
       accountSQSClient = getSqsClientWithNewAccount(account, "admin");
       otherAccount = "sqs-account-b-" + System.currentTimeMillis();
-      createAccount(otherAccount);
+      SQSUtils.synchronizedCreateAccount(otherAccount);
       otherAccountSQSClient = getSqsClientWithNewAccount(otherAccount, "admin");
     } catch (Exception e) {
       try {
@@ -77,7 +75,7 @@ public class TestSQSPermissions {
           listQueuesResult.getQueueUrls().forEach(accountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(account);
+      SQSUtils.synchronizedDeleteAccount(account);
     }
     if (otherAccount != null) {
       if (otherAccountSQSClient != null) {
@@ -86,7 +84,7 @@ public class TestSQSPermissions {
           listQueuesResult.getQueueUrls().forEach(otherAccountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(otherAccount);
+      SQSUtils.synchronizedDeleteAccount(otherAccount);
     }
   }
 

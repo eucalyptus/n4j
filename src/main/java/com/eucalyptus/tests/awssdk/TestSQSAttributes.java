@@ -3,7 +3,6 @@ package com.eucalyptus.tests.awssdk;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
-import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.ListQueuesResult;
 import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 import com.google.common.base.Splitter;
@@ -21,8 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static com.eucalyptus.tests.awssdk.N4j.*;
 import static com.eucalyptus.tests.awssdk.N4j.assertThat;
+import static com.eucalyptus.tests.awssdk.N4j.getCloudInfoAndSqs;
+import static com.eucalyptus.tests.awssdk.N4j.getSqsClientWithNewAccount;
+import static com.eucalyptus.tests.awssdk.N4j.print;
 import static com.eucalyptus.tests.awssdk.N4j.testInfo;
 
 /**
@@ -42,10 +43,10 @@ public class TestSQSAttributes {
     try {
       getCloudInfoAndSqs();
       account = "sqs-account-a-" + System.currentTimeMillis();
-      createAccount(account);
+      SQSUtils.synchronizedCreateAccount(account);
       accountSQSClient = getSqsClientWithNewAccount(account, "admin");
       otherAccount = "sqs-account-b-" + System.currentTimeMillis();
-      createAccount(otherAccount);
+      SQSUtils.synchronizedCreateAccount(otherAccount);
       otherAccountSQSClient = getSqsClientWithNewAccount(otherAccount, "admin");
     } catch (Exception e) {
       try {
@@ -66,7 +67,7 @@ public class TestSQSAttributes {
           listQueuesResult.getQueueUrls().forEach(accountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(account);
+      SQSUtils.synchronizedDeleteAccount(account);
     }
     if (otherAccount != null) {
       if (otherAccountSQSClient != null) {
@@ -75,7 +76,7 @@ public class TestSQSAttributes {
           listQueuesResult.getQueueUrls().forEach(otherAccountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(otherAccount);
+      SQSUtils.synchronizedDeleteAccount(otherAccount);
     }
   }
 

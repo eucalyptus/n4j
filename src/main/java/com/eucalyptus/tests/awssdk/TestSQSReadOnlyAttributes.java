@@ -1,17 +1,13 @@
 package com.eucalyptus.tests.awssdk;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.ListQueuesResult;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
-import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -20,11 +16,13 @@ import org.testng.annotations.Test;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
-import static com.eucalyptus.tests.awssdk.N4j.*;
+import static com.eucalyptus.tests.awssdk.N4j.assertThat;
+import static com.eucalyptus.tests.awssdk.N4j.getCloudInfoAndSqs;
+import static com.eucalyptus.tests.awssdk.N4j.getSqsClientWithNewAccount;
+import static com.eucalyptus.tests.awssdk.N4j.print;
+import static com.eucalyptus.tests.awssdk.N4j.testInfo;
 
 /**
  * Created by ethomas on 10/4/16.
@@ -43,10 +41,10 @@ public class TestSQSReadOnlyAttributes {
     try {
       getCloudInfoAndSqs();
       account = "sqs-account-a-" + System.currentTimeMillis();
-      createAccount(account);
+      SQSUtils.synchronizedCreateAccount(account);
       accountSQSClient = getSqsClientWithNewAccount(account, "admin");
       otherAccount = "sqs-account-b-" + System.currentTimeMillis();
-      createAccount(otherAccount);
+      SQSUtils.synchronizedCreateAccount(otherAccount);
       otherAccountSQSClient = getSqsClientWithNewAccount(otherAccount, "admin");
     } catch (Exception e) {
       try {
@@ -67,7 +65,7 @@ public class TestSQSReadOnlyAttributes {
           listQueuesResult.getQueueUrls().forEach(accountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(account);
+      SQSUtils.synchronizedDeleteAccount(account);
     }
     if (otherAccount != null) {
       if (otherAccountSQSClient != null) {
@@ -76,7 +74,7 @@ public class TestSQSReadOnlyAttributes {
           listQueuesResult.getQueueUrls().forEach(otherAccountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(otherAccount);
+      SQSUtils.synchronizedDeleteAccount(otherAccount);
     }
   }
 

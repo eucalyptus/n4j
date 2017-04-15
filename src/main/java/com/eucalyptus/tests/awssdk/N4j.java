@@ -132,7 +132,9 @@ class N4j {
         print("Cloud Discovery Complete");
     }
 
-    public static void getCloudInfoAndSqs() throws Exception {
+    private static boolean getCloudInfoAndSqsCalled = false;
+    public synchronized static void getCloudInfoAndSqs() throws Exception {
+        if (getCloudInfoAndSqsCalled) return;
         getCloudInfo();
         getConfigProperties(CLC_IP, USER, PASSWORD);
         print("Getting sqs info from " + LOCAL_INI_FILE);

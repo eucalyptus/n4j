@@ -28,7 +28,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.eucalyptus.tests.awssdk.N4j.*;
+import static com.eucalyptus.tests.awssdk.N4j.LOCAL_EUCTL_FILE;
+import static com.eucalyptus.tests.awssdk.N4j.assertThat;
+import static com.eucalyptus.tests.awssdk.N4j.createIAMPolicy;
+import static com.eucalyptus.tests.awssdk.N4j.createUser;
+import static com.eucalyptus.tests.awssdk.N4j.deleteIAMPolicy;
+import static com.eucalyptus.tests.awssdk.N4j.getCloudInfoAndSqs;
+import static com.eucalyptus.tests.awssdk.N4j.getConfigProperty;
+import static com.eucalyptus.tests.awssdk.N4j.getSqsClientWithNewAccount;
+import static com.eucalyptus.tests.awssdk.N4j.getUserCreds;
+import static com.eucalyptus.tests.awssdk.N4j.print;
+import static com.eucalyptus.tests.awssdk.N4j.sqs;
+import static com.eucalyptus.tests.awssdk.N4j.testInfo;
 
 /**
  * Created by ethomas on 10/4/16.
@@ -82,13 +93,13 @@ public class TestSQSIAMPolicies {
       getCloudInfoAndSqs();
       authorizationExpiryMs = parseInterval(getConfigProperty(LOCAL_EUCTL_FILE, "authentication.authorization_expiry"), 5000L);
       account = "sqs-account-a-" + System.currentTimeMillis();
-      createAccount(account);
+      SQSUtils.synchronizedCreateAccount(account);
       accountSQSClient = getSqsClientWithNewAccount(account, "admin");
       AWSCredentials accountCredentials = getUserCreds(account, "admin");
       createUser(account, "user");
       accountUserSQSClient = getSqsClientWithNewAccount(account, "user");
       otherAccount = "sqs-account-b-" + System.currentTimeMillis();
-      createAccount(otherAccount);
+      SQSUtils.synchronizedCreateAccount(otherAccount);
       otherAccountSQSClient = getSqsClientWithNewAccount(otherAccount, "admin");
       AWSCredentials otherAccountCredentials = getUserCreds(otherAccount, "admin");
       createUser(otherAccount, "user");
@@ -112,7 +123,7 @@ public class TestSQSIAMPolicies {
           listQueuesResult.getQueueUrls().forEach(accountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(account);
+      SQSUtils.synchronizedDeleteAccount(account);
     }
     if (otherAccount != null) {
       if (otherAccountSQSClient != null) {
@@ -121,7 +132,7 @@ public class TestSQSIAMPolicies {
           listQueuesResult.getQueueUrls().forEach(otherAccountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(otherAccount);
+      SQSUtils.synchronizedDeleteAccount(otherAccount);
     }
   }
 
