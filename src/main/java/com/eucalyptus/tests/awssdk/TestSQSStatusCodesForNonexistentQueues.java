@@ -23,12 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static com.eucalyptus.tests.awssdk.N4j.assertThat;
-import static com.eucalyptus.tests.awssdk.N4j.createAccount;
 import static com.eucalyptus.tests.awssdk.N4j.createUser;
-import static com.eucalyptus.tests.awssdk.N4j.deleteAccount;
 import static com.eucalyptus.tests.awssdk.N4j.getCloudInfoAndSqs;
 import static com.eucalyptus.tests.awssdk.N4j.getSqsClientWithNewAccount;
 import static com.eucalyptus.tests.awssdk.N4j.getUserCreds;
@@ -62,13 +59,13 @@ public class TestSQSStatusCodesForNonexistentQueues {
     try {
       getCloudInfoAndSqs();
       account = "sqs-account-a-" + System.currentTimeMillis();
-      createAccount(account);
+      SQSUtils.synchronizedCreateAccount(account);
       accountSQSClient = getSqsClientWithNewAccount(account, "admin");
       AWSCredentials accountCredentials = getUserCreds(account, "admin");
       createUser(account, "user");
       accountUserSQSClient = getSqsClientWithNewAccount(account, "user");
       otherAccount = "sqs-account-b-" + System.currentTimeMillis();
-      createAccount(otherAccount);
+      SQSUtils.synchronizedCreateAccount(otherAccount);
       otherAccountSQSClient = getSqsClientWithNewAccount(otherAccount, "admin");
       AWSCredentials otherAccountCredentials = getUserCreds(otherAccount, "admin");
       createUser(otherAccount, "user");
@@ -109,7 +106,7 @@ public class TestSQSStatusCodesForNonexistentQueues {
           listQueuesResult.getQueueUrls().forEach(accountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(account);
+      SQSUtils.synchronizedDeleteAccount(account);
     }
     if (otherAccount != null) {
       if (otherAccountSQSClient != null) {
@@ -118,7 +115,7 @@ public class TestSQSStatusCodesForNonexistentQueues {
           listQueuesResult.getQueueUrls().forEach(otherAccountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(otherAccount);
+      SQSUtils.synchronizedDeleteAccount(otherAccount);
     }
   }
 

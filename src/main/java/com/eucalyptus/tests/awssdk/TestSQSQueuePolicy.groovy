@@ -18,19 +18,7 @@ import com.github.sjones4.youcan.youare.model.CreateAccountRequest
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 
-import static com.eucalyptus.tests.awssdk.N4j.IAM_ENDPOINT
-import static com.eucalyptus.tests.awssdk.N4j.SQS_ENDPOINT
-import static com.eucalyptus.tests.awssdk.N4j.TOKENS_ENDPOINT
-import static com.eucalyptus.tests.awssdk.N4j.assertThat
-import static com.eucalyptus.tests.awssdk.N4j.createIAMPolicy
-import static com.eucalyptus.tests.awssdk.N4j.createUser
-import static com.eucalyptus.tests.awssdk.N4j.deleteAccount
-import static com.eucalyptus.tests.awssdk.N4j.getCloudInfoAndSqs
-import static com.eucalyptus.tests.awssdk.N4j.getSqsClientWithNewAccount
-import static com.eucalyptus.tests.awssdk.N4j.getUserCreds
-import static com.eucalyptus.tests.awssdk.N4j.print
-import static com.eucalyptus.tests.awssdk.N4j.testInfo
-import static com.eucalyptus.tests.awssdk.N4j.youAre
+import static com.eucalyptus.tests.awssdk.N4j.*
 
 /**
  * Test authorizing access via a queue policy.

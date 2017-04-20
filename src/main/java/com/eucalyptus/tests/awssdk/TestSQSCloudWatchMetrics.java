@@ -1,6 +1,5 @@
 package com.eucalyptus.tests.awssdk;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatch;
@@ -22,22 +21,26 @@ import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry;
 import com.amazonaws.services.sqs.model.SendMessageBatchResult;
 import com.amazonaws.services.sqs.model.SendMessageBatchResultEntry;
 import com.beust.jcommander.internal.Maps;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.internal.annotations.Sets;
 
-import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.eucalyptus.tests.awssdk.N4j.*;
+import static com.eucalyptus.tests.awssdk.N4j.CW_ENDPOINT;
+import static com.eucalyptus.tests.awssdk.N4j.LOCAL_EUCTL_FILE;
+import static com.eucalyptus.tests.awssdk.N4j.SQS_ENDPOINT;
+import static com.eucalyptus.tests.awssdk.N4j.assertThat;
+import static com.eucalyptus.tests.awssdk.N4j.getCloudInfoAndSqs;
+import static com.eucalyptus.tests.awssdk.N4j.getConfigProperty;
+import static com.eucalyptus.tests.awssdk.N4j.getUserCreds;
+import static com.eucalyptus.tests.awssdk.N4j.print;
+import static com.eucalyptus.tests.awssdk.N4j.testInfo;
 
 /**
  * Created by ethomas on 9/21/16.
@@ -56,7 +59,7 @@ public class TestSQSCloudWatchMetrics {
     try {
       getCloudInfoAndSqs();
       account = "sqs-account-a-" + System.currentTimeMillis();
-      createAccount(account);
+      SQSUtils.synchronizedCreateAccount(account);
       AWSCredentials creds = getUserCreds(account, "admin");
       accountSQSClient = new AmazonSQSClient(
         new BasicAWSCredentials(creds.getAWSAccessKeyId(), creds.getAWSSecretKey())
@@ -85,7 +88,7 @@ public class TestSQSCloudWatchMetrics {
           listQueuesResult.getQueueUrls().forEach(accountSQSClient::deleteQueue);
         }
       }
-      deleteAccount(account);
+      SQSUtils.synchronizedDeleteAccount(account);
     }
   }
 
